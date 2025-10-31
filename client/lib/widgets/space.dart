@@ -1,17 +1,17 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
-class SpaceScene extends StatefulWidget{
-  const SpaceScene({super.key});
+class Space extends StatefulWidget{
+  const Space({super.key});
 
   @override
-  State<SpaceScene> createState() => _SpaceSceneState();
+  State<Space> createState() => _SpaceState();
 }
 
-class _SpaceSceneState extends State<SpaceScene>{
-
+class _SpaceState extends State<Space>{
   @override
   void initState(){
     super.initState();
@@ -25,14 +25,26 @@ class _SpaceSceneState extends State<SpaceScene>{
   @override
   Widget build(BuildContext context){
     return Container(
+      padding: EdgeInsets.all(10),
       width: 380,
       height: 300,
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(20),
         border: Border.all(
-          color: Color(0xFF737373),
+          color: Theme.of(context).colorScheme.primary,
           width: 1,
         )
+      ),
+      child: Stack(
+        children: <Widget>[
+          Positioned( 
+            top: 10, // TODO : 좌표로 변경
+            bottom: 10,
+            left: 10,
+            right: 10,
+            child: SvgPicture.asset('assets/star_1')
+          ),
+        ],
       ),
     );
   }

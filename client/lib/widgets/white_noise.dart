@@ -19,7 +19,7 @@ class _WhiteNoiseState extends State<WhiteNoise>{
 
   @override
   Widget build(BuildContext context){
-    return Container(
+    return SizedBox(
       height: 98,
       child: Row(
         children: [
