@@ -1,4 +1,3 @@
-import 'package:client/screens/calender_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:client/widgets/space.dart';
@@ -6,6 +5,8 @@ import 'package:client/widgets/white_noise.dart';
 import 'package:client/widgets/log.dart';
 import 'package:client/widgets/planet.dart';
 import 'package:client/screens/calender_screen.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 
 class HomeScreen extends StatefulWidget{
   const HomeScreen({super.key});
@@ -59,5 +60,18 @@ class _HomeScreenState extends State<HomeScreen>{
         ],
       )
     );
+  }
+}
+
+
+//
+void fetchData() async {
+  final response = await http.get(Uri.parse('http://127.0.0.1:8000/items/1'));
+  
+  if (response.statusCode == 200) {
+    var data = jsonDecode(response.body);
+    print(data);
+  } else {
+    print('Failed to load data');
   }
 }

@@ -1,5 +1,3 @@
-
-
 import 'package:flutter/material.dart';
 
 class Planet extends StatefulWidget {
@@ -30,3 +28,4 @@ class _PlanetState extends State<Planet>
     return const Placeholder();
   }
 }
+
