@@ -21,7 +21,6 @@ class SchemaManager:
 
   def insert(self, value):
     insert_command = "INSERT INTO users (name, age) VALUES (?, ?);"
-    # user = ('김유신', 25)
     user = value
     self.cursor.execute(insert_command, user)
 
