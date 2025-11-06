@@ -6,9 +6,9 @@ import os
 
 class SchemaManager:
   def __init__(self):
-    self.path = "./data/test.db"
-    self.current_path = self.test_db_path # 현재 사용하고 있는 sql file path
-    self.connection = sqlite3.connect(self.path)
+    self.root = "./data/"
+    self.file_name = "test.db" 
+    self.connection = sqlite3.connect(f'{self.root}{self.file_name}')
     self.cursor = self.connection.cursor
 
 
