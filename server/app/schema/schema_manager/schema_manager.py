@@ -1,39 +1,44 @@
 import sqlite3 
 import os
 
-
-# 의존성 DB 관리 클래스
-# sqlite가 성능이 별로라면 aiosqlite로 변경
+import aiosqlite #type: ignore
+import asyncio
 
 
 class SchemaManager:
+
   def __init__(self):
-    self.rootPath = "./data/"
-    self.file_name = "test.db" 
-    self.connection = sqlite3.connect(f'{self.root}{self.file_name}')
-    self.cursor = self.connection.cursor
+    self.db_path = "./data/test.db"
+    self.connect = None
 
+  @classmethod
+  async def init(cls):
+    self = cls()
+    self.connect = await aiosqlite.connect(f'{self.db_path}')
+    return self
+    
+  async def create_table(self, query):
+    async with self.connect.cursor() as cursor:
+      await cursor.execute(query)
+    await self.connect.commit()
 
-  def default(self):
-    self.cursor.execute(self.path)
+  async def insert(self, table, value):
+    # TODO : 테이블 부분 쿼리 수정 필요
+    query = f"INSERT INTO {table} (name, age) VALUES (?, ?);"
+    async with self.connect.cursor() as cursor:
+      await cursor.execute(query, value)
+    await self.connect.commit()
 
-  def create_table(self, query):
-    self.cursor.execute(query)
+  async def select(self, table, id):
+    query = f"SELECT * FROM {table} WHERE id=?"
+    async with self.connect.cursor() as cursor:
+      await cursor.execute(query, (id, ))
+      answer = await cursor.fetchone()
+    return answer
 
-  def insert(self, value):
-    insert_query = "INSERT INTO users (name, age) VALUES (?, ?);"
-    element = value
-    self.cursor.execute(insert_query, element)
-
-  def select(self, table, condition):
-    select_query = "SELECT FROM ? WHERE id=?"
-    self.cursor.execute(select_query, table, condition)
-
-  def save(self):
-    self.connection.commit()
-    self.connection.close()
+  async def save(self):
+    await self.connection.commit()
+    await self.connection.close()
 
   def __del__(self):
-    self.save()
-    print(f"schema manager 인스턴스 삭제 위치 : {os.path.basename(os.path.abspath(__file__))}")
-
+    print(f"[SchemaManager] 인스턴스 삭제 시 현위치: {os.path.basename(self.db_path)}")
