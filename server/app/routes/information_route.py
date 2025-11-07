@@ -5,16 +5,25 @@ import datetime
 import xmltodict
 
 import mars_time
-import schema.schema_manager.schema_manager as schama_manager
+import schema.schema_manager.schema_manager as SchemaManager
 import config
 
-schamaManager = schama_manager.SchemaManager()
 
-# TODO : 천체 정보 추가 이후, 랜덤처리 추가
+# TODO : 천체 정보 추가, 랜덤처리 추가
 
 router = APIRouter(
-  prefix="object"
+  prefix="information"
 )
+
+
+# DB 초기화문
+db : SchemaManager = None
+
+@router.lifespan("startup")
+async def startup_event():
+  global db
+  db = await SchemaManager.init()
+
 
 # 천문 현상 정보 랜덤 반환
 # 월 단위 
@@ -25,12 +34,9 @@ async def calender(year: int = Query(...), month: int = Query(...)):
   API_KEY = config.settings.ASTRO_OPEN_API_KEY
   params = {
     "serviceKey" : f"{API_KEY}",
-    # 기본 api 응답 형태가 xml
-    # "format" : "json", 
     "solYear": year,
     "solMonth" : f"{month:02d%}"
   }
-
   async with httpx.AsyncClient() as client:
     try:
       response = await client.get(API_KEY, params=params, timeout=5.0)
@@ -49,13 +55,14 @@ async def calender(year: int = Query(...), month: int = Query(...)):
       return {"error": "화성 날짜를 불러올 수 없습니다."}
     
 
-          
+# 천체에 대해서 랜덤 정보를 제공하는 라우트 -> /mars, /earth, /solar
 @router.get('/mars')
-def marsInfo():
+async def mars():
   try:
-    data = schamaManager.select("Mars", random.randrange(1, 2))
+    data:str = await db.select("Mars", random.randrange(1, 2))
   except Exception as e:
     print(f"화성 정보 불러오기 에러 : {e}")
+    return {"error": str(e)}
   return data
 
 
@@ -68,19 +75,21 @@ def marsDate():
 
 
 @router.get('/solar')
-def solarInfo():
+async def solarInfo():
   try:
-    data = schamaManager.select("Solar", random.randrange(1, 2))
+    data : str = await db.select("Solar", random.randrange(1, 2))
   except Exception as e:
     print(f"태양 정보 불러 오기 에러 : {e}")
+    return {"error" : str(e)}
   return data
 
 
 @router.get('/earth')
-def earthInfo():
+async def earthInfo():
   try:
-    data = schamaManager.select("Earth", random.randrange(1, 2))
+    data : str = await db.select("Earth", random.randrange(1, 2))
   except Exception as e:
     print(f"지구 정보 불러오기 에러 : {e}")
+    return {"error" : str(e)}
   return data
 
