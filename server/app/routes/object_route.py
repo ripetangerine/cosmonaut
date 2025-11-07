@@ -1,7 +1,9 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, Query
 import httpx
 import random 
 import datetime
+import xmltodict
+
 import mars_time
 import schema.schema_manager.schema_manager as schama_manager
 import config
@@ -17,19 +19,26 @@ router = APIRouter(
 # 천문 현상 정보 랜덤 반환
 # 월 단위 
 @router.get('/calender')
-async def calender():
+async def calender(year: int = Query(...), month: int = Query(...)):
+  # 클라이언트에서 요청을 할때 년/월 정보를 제공
   URL = "http://apis.data.go.kr/B090041/openapi/service/AstroEventInfoService/getAstroEventInfo"
   API_KEY = config.settings.ASTRO_OPEN_API_KEY
   params = {
-    "api_key" : f"{API_KEY}",
-    "format" : "json",
+    "serviceKey" : f"{API_KEY}",
+    # 기본 api 응답 형태가 xml
+    # "format" : "json", 
+    "solYear": year,
+    "solMonth" : f"{month:02d%}"
   }
+
   async with httpx.AsyncClient() as client:
     try:
       response = await client.get(API_KEY, params=params, timeout=5.0)
-      response.raise_for_status()
-      return response.json()
-    
+      response.raise_for_status() 
+      # xml 변환
+      data_dict = xmltodict.parse(response.text)
+      return data_dict  # FastAPI가 자동으로 JSON 응답으로 변환해줌
+
     except httpx.HTTPStatusError as e:
       print(f"calender API 요청 실패: 상태 코드 {e.response.status_code} for {e.request.url}")
       return {"error": f"calender API에서 오류 응답을 받았습니다: {e.response.status_code}"}
@@ -38,8 +47,9 @@ async def calender():
       # 네트워크, 타임아웃
       print(f"API 요청 중 오류 발생: {e.request.url} - {e}")
       return {"error": "화성 날짜를 불러올 수 없습니다."}
+    
 
-
+          
 @router.get('/mars')
 def marsInfo():
   try:
