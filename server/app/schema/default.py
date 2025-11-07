@@ -59,7 +59,7 @@ query_createTable = """
   );
 
   """
-schemaManager.createTable(query_createTable)
+schemaManager.create_table(query_createTable)
 
 
 # 2. 정적인 정보 삽입 - 행성 랜덤 정보 

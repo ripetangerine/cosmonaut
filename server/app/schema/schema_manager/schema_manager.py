@@ -3,10 +3,12 @@ import os
 
 
 # 의존성 DB 관리 클래스
+# sqlite가 성능이 별로라면 aiosqlite로 변경
+
 
 class SchemaManager:
   def __init__(self):
-    self.root = "./data/"
+    self.rootPath = "./data/"
     self.file_name = "test.db" 
     self.connection = sqlite3.connect(f'{self.root}{self.file_name}')
     self.cursor = self.connection.cursor
@@ -15,14 +17,17 @@ class SchemaManager:
   def default(self):
     self.cursor.execute(self.path)
 
-  def createTable(self, query):
+  def create_table(self, query):
     self.cursor.execute(query)
 
-
   def insert(self, value):
-    insert_command = "INSERT INTO users (name, age) VALUES (?, ?);"
-    user = value
-    self.cursor.execute(insert_command, user)
+    insert_query = "INSERT INTO users (name, age) VALUES (?, ?);"
+    element = value
+    self.cursor.execute(insert_query, element)
+
+  def select(self, table, condition):
+    select_query = "SELECT FROM ? WHERE id=?"
+    self.cursor.execute(select_query, table, condition)
 
   def save(self):
     self.connection.commit()
