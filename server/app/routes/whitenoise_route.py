@@ -9,10 +9,10 @@ router = APIRouter(
 AUDIO_ROOT_PATH = "../public/audio"
 AUDIO_FILE_LIST = os.listdir('../public/audio')
 
+# 기본 파일 삽입  
 try:
   AUDIO_FILE_LIST = os.listdir(AUDIO_ROOT_PATH)
 except FileNotFoundError:
-  # 기본 파일 삽입
   AUDIO_FILE_LIST = ['603921main_voyager_jupiter_lightning.mp3']
 
 
@@ -34,14 +34,10 @@ def play(
         detail = f"{noise_title} 파일을 찾을 수 없다."
       )
     file_path = os.path.join(AUDIO_ROOT_PATH, noise_title)
-    headers ={
-      "Content-Disposition" : f"attachment; filename={noise_title}"
-    }
-
     return StreamingResponse(
       file_iterator(file_path),
       media_type="audio/mpeg",
-      headers= headers
+      headers= {"Content-Disposition" : f"attachment; filename={noise_title}"}
     )
   except HTTPException:
     raise
