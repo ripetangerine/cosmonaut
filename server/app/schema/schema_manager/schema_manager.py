@@ -22,19 +22,36 @@ class SchemaManager:
       await cursor.execute(query)
     await self.connect.commit()
 
-  async def insert(self, table, value):
+  async def insert(self, table, value): # 이중으로 삽입 -> ("table", ("값1, 값2..."))
     # TODO : 테이블 부분 쿼리 수정 필요
+    
     query = f"INSERT INTO {table} (name, age) VALUES (?, ?);"
     async with self.connect.cursor() as cursor:
       await cursor.execute(query, value)
     await self.connect.commit()
 
   async def select(self, table, id):
-    query = f"SELECT * FROM {table} WHERE id=?"
+    if(id == None):
+      query = f"SELECT * FROM {table}"
+    else:
+      query = f"SELECT * FROM {table} WHERE id=?"
     async with self.connect.cursor() as cursor:
-      await cursor.execute(query, (id, ))
+      try:
+        await cursor.execute(query, (id, ))
+      except Exception:
+        return False
       answer = await cursor.fetchone()
     return answer
+  
+  async def custom(self, query):
+    async with self.connect.cursor() as cursor:
+      await cursor.execute(query)
+      return await cursor.fetchone()
+    
+  async def delete(self, table):
+    query = f"TRUNCATE TABLE {table};"
+    async with self.connect.cursor() as cursor:
+      await cursor.execute(query)
 
   async def save(self):
     await self.connection.commit()

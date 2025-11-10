@@ -121,10 +121,8 @@ async def observation(
   # 추후 화성 관련 api 개발 예정
   # elif(type== "mars"):
   #   return 
-
   return await db.custom("SELECT * FROM ObservationDailyLog ORDER BY id DESC LIMIT 3;")
     
-
 
 # 관측일지 전체
 @router.get('/all')
