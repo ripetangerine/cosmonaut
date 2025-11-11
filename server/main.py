@@ -1,35 +1,54 @@
-from fastapi import FastAPI
-# from routers import users, auth, items
+from fastapi import FastAPI, Query
+from fastapi.encoders import jsonable_encoder
+from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel
+from datetime import datetime
 
-# app = FastAPI()
-
-# @app.get("/")
-# def read_root():
-#     return {"message": "Hello FastAPI!"}
-
-
-
-'''
-from fastapi import FastAPI
-
-app = FastAPI()
-
-app.include_router(users.router, prefix="/api/v1/users", tags=["Users"])
-app.include_router(auth.router, prefix="/api/v1/auth", tags=["Auth"])
-app.include_router(items.router, prefix="/api/v1/items", tags=["Items"])
+# 라우트 
+from app.routes.information import router as information, get_calender
+from app.routes.observation import router as observation, get_observation
+from app.routes.whitenoise import router as whitenoise, get_whitenoise
 
 
--------
+router = FastAPI()
+
+router.include_router(
+  information,
+  observation,
+  whitenoise,
+)
+
+origins = [
+  "http://localhost:8080",
+]
+
+router.add_middleware(
+  CORSMiddleware,
+  allow_origins=origins,
+  allow_credentials=True,
+  allow_method=["*"],
+  allow_headers=["*"]
+)
+
+class BootRes(BaseModel):
+  calender : list
+  observation : list
+  whitenoise: list
 
 
-# main.py
-from fastapi import FastAPI
-from routers import users, auth   # 라우터 임포트
+@router.get("/", response_model=BootRes)
+async def bootstrap(
+  type: str = Query(...)
+):
+  current = datetime.now()
+  calender = await get_calender(current.year(), current.month())
+  observation = await get_observation(type, current.day(), current.day())
+  whitenoise = await get_whitenoise()
 
-app = FastAPI()
-
-# 라우터 연결
-app.include_router(users.router)
-app.include_router(auth.router)  # 나중에 auth 라우터 추가 가능
-
-'''
+  res = {
+    "calender" : calender,
+    "observation" : observation,
+    "whitenoise" : whitenoise,
+  }
+  return jsonable_encoder(res)
+  
