@@ -8,21 +8,6 @@ from math import sin, cos, asin, acos, pi
 from typing import List
 from pydantic import BaseModel
 
-# TODO : 프론트에서 진행
-# 프론트에서
-# 사용자 현재 위치 가져오기
-# @router.get('/location')
-# def observation_location():
-#   return ''
-
-# 관측 일지의 단어 검색
-# @router.get('/search/')
-# async def search_word(
-#   q : str = Query(default=None, min_length=2, max_length=20)
-# ):
-#   # AI 검색 후 문자열 반환
-#   return ''
-
 
 router = APIRouter(
   prefix="/observation",  
@@ -51,7 +36,7 @@ API_PATH = {
 
 # 관측일지 최신 정보 가져오기
 @router.get('/')
-async def observation(
+async def get_observation(
   type: str = Query(...), 
   startDate: str = Query(...), 
   endDate: str = Query(...)
@@ -60,8 +45,8 @@ async def observation(
   params = {
   "API_KEY" : API_KEY,
   "format" : "json",
-  "startDate" : f"{startDate:02d%}",
-  "endDate" : f"{endDate:02d%}",
+  "startDate" : f"{startDate:02d}",
+  "endDate" : f"{endDate:02d}",
   }
 
   # 하루치 데이터만 db에서 관리 : 날짜가 다르다면 db 삭제

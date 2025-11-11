@@ -18,7 +18,7 @@ except FileNotFoundError:
 
 # 음악 리스트 반환
 @router.get("/")
-def init():
+def get_whitenoise():
   return AUDIO_FILE_LIST
 
 # 클라이언트에서 음악 파일명을 전송하면 해당 파일을 반환하는 방식

@@ -1,26 +1,27 @@
 from fastapi import APIRouter, Depends, HTTPException
 
-router = APIRouter(prefix="/users", tags=["User"])
+router = APIRouter(
+  prefix="/users"
+)
 
+class UserReq:
+    screen_type : str
 
-'''
-from fastapi import APIRouter, Depends
-from schemas.user import UserCreate, UserRead
+class UserRes:
+    status: int  # 200, 500
 
-router = APIRouter()
-
-@router.post("/", response_model=UserRead)
-def create_user(user: UserCreate):
+@router.post("/", response_model=UserReq)
+def user_info_save(user: UserRes):
     return {"msg": f"{user.name} created"}
 
-@router.get("/{user_id}", response_model=UserRead)
-def get_user(user_id: int):
-    return {"user_id": user_id, "name": "Alice"}
-'''
+# @router.get("/{user_id}", response_model=UserRead)
+# def get_user(user_id: int):
+#     return {"user_id": user_id, "name": "Alice"}
+# '''
 
 # TODO : 마운트 시 유저정보 자동 저장 및 가져오기
 # TODO : 마운트 시 진행되는 로직이었으면 좋겠음
-
+# 유저가 보던 화면 자동 저장
 
 
 
