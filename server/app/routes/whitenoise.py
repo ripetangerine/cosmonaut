@@ -3,16 +3,19 @@ from fastapi.responses import StreamingResponse
 import os
 
 router = APIRouter(
-  prefix="whitenoise"
+  prefix="/whitenoise"
 )
 
 AUDIO_ROOT_PATH = "../public/audio"
-AUDIO_FILE_LIST = os.listdir('../public/audio')
+# os.path.abspath(stars_path)
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+audio_file_list_path = os.path.join(BASE_DIR, "..", "public", "audio")
 
 # 기본 파일 삽입  
 try:
-  AUDIO_FILE_LIST = os.listdir(AUDIO_ROOT_PATH)
-except FileNotFoundError:
+  AUDIO_FILE_LIST = os.listdir(os.path.abspath(audio_file_list_path))
+except FileNotFoundError as e:
+  print(str(e))
   AUDIO_FILE_LIST = ['603921main_voyager_jupiter_lightning.mp3']
 
 

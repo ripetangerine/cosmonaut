@@ -1,12 +1,7 @@
-import sqlite3 
+import aiosqlite
 import os
 
-import aiosqlite #type: ignore
-import asyncio
-
-
-class SchemaManager:
-
+class Manager:
   def __init__(self):
     self.db_path = "./data/test.db"
     self.connect = None

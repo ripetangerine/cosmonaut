@@ -1,3 +1,4 @@
+from contextlib import asynccontextmanager
 from fastapi import APIRouter, Query
 import httpx
 import random 
@@ -5,25 +6,24 @@ import datetime
 import xmltodict
 
 import mars_time
-import schema.schema_manager.schema_manager as SchemaManager
-import config
+import app.schema.manager.manager as SchemaManager
+from app.config import settings
 
 
 # TODO : 천체 정보 추가, 랜덤처리 추가
 
 router = APIRouter(
-  prefix="information"
+  prefix="/information"
 )
+
+@asynccontextmanager
+async def lifespan():
+  global db
+  db = await SchemaManager.init()
 
 
 # DB 초기화문
 db : SchemaManager = None
-
-@router.lifespan("startup")
-async def startup_event():
-  global db
-  db = await SchemaManager.init()
-
 
 # 천문 현상 정보 랜덤 반환
 # 월 단위 
@@ -34,7 +34,7 @@ async def get_calender(
   ):
   # 클라이언트에서 요청을 할때 년/월 정보를 제공
   URL = "http://apis.data.go.kr/B090041/openapi/service/AstroEventInfoService/getAstroEventInfo"
-  API_KEY = config.settings.ASTRO_OPEN_API_KEY
+  API_KEY = settings.ASTRO_OPEN_API_KEY
   params = {
     "serviceKey" : f"{API_KEY}",
     "solYear": year,

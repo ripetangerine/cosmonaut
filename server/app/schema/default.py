@@ -1,5 +1,5 @@
 import asyncio
-import app.schema.schema_manager.schema_manager as SchemaManager
+import app.schema.manager.manager as SchemaManager
 
 async def main():
   

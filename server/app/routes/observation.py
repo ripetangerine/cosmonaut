@@ -1,27 +1,27 @@
+from contextlib import asynccontextmanager
 import json
 from fastapi import APIRouter, Query
-import schema.schema_manager as SchemaManager
-import config
+import app.schema.manager.manager as SchemaManager
+from app.config import settings
 import httpx
 from datetime import datetime, timezone
 from math import sin, cos, asin, acos, pi
 from typing import List
 from pydantic import BaseModel
+import os
 
 
 router = APIRouter(
   prefix="/observation",  
 )
 
-db : SchemaManager = None
-
-@router.lifespan("startup")
-async def startup_event():
+@asynccontextmanager
+async def lifespan():
   global db
   db = await SchemaManager.init()
 
 
-API_KEY = config.settings.ASTRO_OPEN_API_KEY
+API_KEY = settings.ASTRO_OPEN_API_KEY
 NASA_URL = "https://api.nasa.gov/"
 API_PATH = {
   # solar
@@ -61,7 +61,7 @@ async def get_observation(
   if(type == "solar"):
     async with httpx.AsyncClient() as client:
       try:
-        response = await client.get(f"{NASA_URL}{API_PATH["notification"]}{params}")
+        response = await client.get(f'{NASA_URL}{API_PATH["notification"]}', params=params)
         # 응답 -> db에서 중복 검색 -> 없다면 db 삽입(있으면 무시) 
         # 반환 : db에서 마지막으로 삽입한 요소를 반환
         # 조건에서 id로 중복을 탐색하고 중복이 없다면 삽입
@@ -81,9 +81,9 @@ async def get_observation(
   elif(type == "earth"):
     async with httpx.AsyncClient() as client:
       try:
-        response_GST = client.get(f"{NASA_URL}{API_PATH['GST']}{params}")
+        response_GST = client.get(f"{NASA_URL}{API_PATH['GST']}", params=params)
         params["location"] = "Earth"
-        response_IPS = client.get(f"{NASA_URL}{API_PATH['IPS']}{params}")
+        response_IPS = client.get(f"{NASA_URL}{API_PATH['IPS']}", params=params)
         if(
           not(await db.select("ObservationDailyLog", "response_GST.gstID"))
           and not(await db.select("ObservationDailyLog", "response_GST.gstID"))
@@ -130,9 +130,15 @@ class StarRes(BaseModel):
   alt : float
   az : float
 
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+stars_path = os.path.join(BASE_DIR, "..", "public", "data", "stars.json")
+
 # star 데이터 가져오기
-with open("stars.json", "r", encoding="utf-8") as f:
-  STARS_DATA = json.load(f)
+try:
+  with open(os.path.abspath(stars_path), "r", encoding="utf-8") as f:
+    STARS_DATA = json.load(f)
+except FileNotFoundError as e:
+  print("파일 못찾음 ㅅㄱㅂ"+str(e))
 
 # 별 위치 가져오기
 @router.post('/position', response_model=List[StarRes])
