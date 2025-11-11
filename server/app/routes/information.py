@@ -17,9 +17,13 @@ router = APIRouter(
 )
 
 @asynccontextmanager
-async def lifespan():
+async def lifespan(app=None):
   global db
-  db = await SchemaManager.init()
+  db = await SchemaManager.Manager.init()
+  try:
+    yield
+  except Exception:
+    await db.connect.close()
 
 
 # DB 초기화문

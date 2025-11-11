@@ -1,7 +1,8 @@
+from contextlib import asynccontextmanager
 from fastapi import FastAPI, Query
 from fastapi.encoders import jsonable_encoder
 from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel
+# from pydantic import BaseModel
 from datetime import datetime
 
 # 라우트 
@@ -15,7 +16,15 @@ from app.routes.observation import get_observation, star_position
 from app.routes.whitenoise import get_whitenoise
 
 
-app = FastAPI()
+@asynccontextmanager
+async def combined_lifespan(app: FastAPI):
+  async with observation.lifespan():
+    async with information.lifespan():
+      yield 
+
+app = FastAPI(
+  lifespan=combined_lifespan
+)
 
 app.include_router(observation.router, prefix='/observation')
 app.include_router(information.router, prefix='/information')
@@ -29,30 +38,29 @@ app.add_middleware(
   CORSMiddleware,
   allow_origins=origins,
   allow_credentials=True,
-  allow_method=["*"],
+  allow_methods=["*"],
   allow_headers=["*"]
 )
 
-class BootRes(BaseModel):
-  calender : list
-  observation : list
-  whitenoise: list
 
-
-@app.get("/", response_model=BootRes)
+@app.get("/")
 async def bootstrap(
-  type: str = Query(...)
+  type: str = Query("solar")
 ):
   current = datetime.now()
-  calender = await get_calender(current.year(), current.month())
-  observation = await get_observation(type, current.day(), current.day())
-  whitenoise = await get_whitenoise()
-  starPosition = await star_position()
+  day = current.day
+  year = current.year
+  month = current.month
+  calender_data = await get_calender(year, month)
+  observation_data = await get_observation(type, day, day)
+  whitenoise_data = await get_whitenoise()
+  starposition_data = await star_position()
 
   res = {
-    "calender" : calender,
-    "observation" : observation,
-    "whitenoise" : whitenoise,
+    "calender" : calender_data,
+    "observation" : observation_data,
+    "whitenoise" : whitenoise_data,
+    "starposition" : starposition_data,
   }
   return jsonable_encoder(res)
   

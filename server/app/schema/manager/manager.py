@@ -3,7 +3,12 @@ import os
 
 class Manager:
   def __init__(self):
-    self.db_path = "./data/test.db"
+
+    base_dir = os.path.dirname(os.path.abspath(__file__))
+    data_dir = os.path.abspath(os.path.join(base_dir, "../../../data"))
+    os.makedirs(data_dir, exist_ok=True)
+
+    self.db_path = os.path.join(data_dir, "test.db")
     self.connect = None
 
   @classmethod

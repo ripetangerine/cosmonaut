@@ -11,14 +11,18 @@ from pydantic import BaseModel
 import os
 
 
-router = APIRouter(
-  prefix="/observation",  
-)
-
 @asynccontextmanager
 async def lifespan():
   global db
-  db = await SchemaManager.init()
+  db = await SchemaManager.Manager.init()
+  try:
+    yield
+  except Exception:
+    db.connect.close()
+
+router = APIRouter(
+  prefix="/observation",
+)
 
 
 API_KEY = settings.ASTRO_OPEN_API_KEY
