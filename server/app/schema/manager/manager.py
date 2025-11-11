@@ -3,7 +3,6 @@ import os
 
 class Manager:
   def __init__(self):
-
     base_dir = os.path.dirname(os.path.abspath(__file__))
     data_dir = os.path.abspath(os.path.join(base_dir, "../../../data"))
     os.makedirs(data_dir, exist_ok=True)
@@ -24,7 +23,6 @@ class Manager:
 
   async def insert(self, table, value): # 이중으로 삽입 -> ("table", ("값1, 값2..."))
     # TODO : 테이블 부분 쿼리 수정 필요
-    
     query = f"INSERT INTO {table} (name, age) VALUES (?, ?);"
     async with self.connect.cursor() as cursor:
       await cursor.execute(query, value)

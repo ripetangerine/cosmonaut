@@ -11,7 +11,7 @@ from datetime import datetime
 # from app.routes.whitenoise import router as whitenoise, get_whitenoise
 
 from app.routes import observation, information, whitenoise
-from app.routes.information import get_calender
+from app.routes.information import get_calender, mars_date
 from app.routes.observation import get_observation, star_position
 from app.routes.whitenoise import get_whitenoise
 
@@ -51,16 +51,19 @@ async def bootstrap(
   day = current.day
   year = current.year
   month = current.month
+  
   calender_data = await get_calender(year, month)
   observation_data = await get_observation(type, day, day)
   whitenoise_data = await get_whitenoise()
   starposition_data = await star_position()
+  mars_date_data = mars_date()
 
   res = {
     "calender" : calender_data,
     "observation" : observation_data,
     "whitenoise" : whitenoise_data,
     "starposition" : starposition_data,
+    "mars_date" : mars_date_data
   }
   return jsonable_encoder(res)
   

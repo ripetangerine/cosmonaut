@@ -74,7 +74,7 @@ async def mars():
 
 
 @router.get('/mars/date')
-def marsDate():
+def mars_date():
   now = datetime.now()
   mars = mars_time.datetime_to_marstime(now.year, now.month, now.day)
   sol = ".0f".format(mars.sol)
