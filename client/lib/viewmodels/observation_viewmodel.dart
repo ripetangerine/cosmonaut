@@ -21,7 +21,7 @@ class ObservationViewmodel extends ChangeNotifier{
   String? get errorMessage => _errorMessage;
 
   // 서비스 호출
-  Future<void> fetchObservation({
+  Future<void> fetchOne({
     required String type,
     required String startDate,
     required String endDate
@@ -41,7 +41,7 @@ class ObservationViewmodel extends ChangeNotifier{
       notifyListeners();
     }
   }
-  Future<void> fetchObservationAll({
+  Future<void> fetchAll({
     required String type,
   }) async{
     _loading = true;
@@ -59,7 +59,7 @@ class ObservationViewmodel extends ChangeNotifier{
     }
   }
 
-  Future<void> fetchObservationPosition({
+  Future<void> fetchPosition({
     required double lat,
     required double lon,
     required String datetime 

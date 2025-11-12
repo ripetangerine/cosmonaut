@@ -17,15 +17,24 @@ class HomeScreen extends StatefulWidget{
 
 // SUN (Default)
 class _HomeScreenState extends State<HomeScreen>{
+  @override
+  void initState(){
+    super.initState();
+    Future.microtask((){
+      context.read<ObservationViewmodel>.fetchAll();
+    });
+  }
 
   @override
   Widget build(BuildContext context){
+    final viewModel = context.watch<InitialDataViewmodel>();
+
     return Scaffold(
       appBar: AppBar(
         elevation: 2,
         backgroundColor: Theme.of(context).colorScheme.surface,
         foregroundColor: Theme.of(context).colorScheme.surface,
-
+        
         title: const Text(
           "cosmonaut",
           style: TextStyle(
