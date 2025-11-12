@@ -120,7 +120,7 @@ async def get_observation(
 # 관측일지 전체
 @router.get('/all')
 async def observation_all(type: str = Query(...)):
-  return await db.custom(f"SELECT * FROM ObservationDailyLog WHERE object_type={type};")
+  return await db.custom(f"SELECT * FROM ObservationDailyLog WHERE object_type={type};").json()
 
 class StarReq(BaseModel):
   lat : float

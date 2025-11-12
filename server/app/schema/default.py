@@ -44,10 +44,9 @@ async def main():
     """
     -- 관찰일지에서 하루 단위의 정보
     CREATE TABLE ObservationDailyLog (
-      id TEXT PRIMARY KEY,`   
+      id TEXT PRIMARY KEY,
       object_type ENUM('solar', 'earth', 'mars'),
-      date_log date not null,
-      event_time time not null,
+      timeStamp date not null,
       event_title TEXT not null,
       content TEXT not null,
     );

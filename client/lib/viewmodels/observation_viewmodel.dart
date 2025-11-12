@@ -1,0 +1,79 @@
+import 'package:flutter/material.dart';
+import 'package:client/models/observation.dart';
+import 'package:client/models/observation_list.dart';
+import 'package:client/models/observation_position.dart';
+import 'package:client/services/observation_service.dart';
+
+class ObservationViewmodel extends ChangeNotifier{
+  final ObservationService _service = ObservationService();
+
+  List<Observation> _observation = [];
+  List<Observation> _observations = [];
+  List<ObservationPosition> _observationPosition = [];
+  bool _loading = true;
+  String? _errorMessage;
+
+  // 외부 getter
+  List<Observation> get observation => _observation;
+  List<Observation> get observations => _observations;
+  List<ObservationPosition> get observationPosition => _observationPosition;
+  bool get loading => _loading;
+  String? get errorMessage => _errorMessage;
+
+  // 서비스 호출
+  Future<void> fetchObservation({
+    required String type,
+    required String startDate,
+    required String endDate
+  }) async{
+    _loading = true;
+    notifyListeners();
+    try{
+      _observation = await _service.fetchObservation(
+        type : type,
+        startDate: startDate,
+        endDate : endDate,
+      );
+    } catch (e){
+      _errorMessage = e.toString();
+    } finally {
+      _loading = false;
+      notifyListeners();
+    }
+  }
+  Future<void> fetchObservationAll({
+    required String type,
+  }) async{
+    _loading = true;
+    notifyListeners();
+    try{
+      _observations = await _service.fetchObservationAll(type: type);
+      _errorMessage = null;
+    }
+    catch(e){
+      _errorMessage = e.toString();
+    }
+    finally{
+      _loading = false;
+      notifyListeners();
+    }
+  }
+
+  Future<void> fetchObservationPosition({
+    required double lat,
+    required double lon,
+    required String datetime 
+  }) async{
+    _loading = true;
+    notifyListeners();
+    try {
+      _observationPosition = [await _service.fetchObservationPosition(lat: lat, lon: lon, datetime: datetime)];
+      _errorMessage = null;
+    } catch(e){
+      _errorMessage = e.toString();
+    } finally {
+      _loading = false;
+      notifyListeners();
+    }
+  }
+}
