@@ -4,22 +4,21 @@ import 'package:http/http.dart' as http;
 import 'package:client/models/observation.dart';
 
 class ObservationService {
-  final String baseUrl = 'http://10.0.2.2:8000/';
+  final String baseUrl = 'http://10.0.2.2:8000';
 
   Future<List<Observation>> fetchObservation({
     required String type,
     required String startDate,
     required String endDate,
   }) async {
-    final response = await http.post(
-      Uri.parse('$baseUrl/'),
-      headers: {"Content-Text" : "application/json"},
-      body: {
+    final url = Uri.parse('$baseUrl/observation/').replace(
+      queryParameters : {
         'type' : type,
         'startDate' : startDate,
-        'endDate' : endDate,
+        'endDate' : endDate
       }
     );
+    final response = await http.get(url);
     if (response.statusCode == 200) {
       final List<dynamic> data = json.decode(response.body);
       return data.map((e) => Observation.fromJson(e)).toList();

@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:client/models/observation.dart';
-import 'package:client/models/observation_list.dart';
 import 'package:client/models/observation_position.dart';
 import 'package:client/services/observation_service.dart';
 
@@ -10,6 +9,7 @@ class ObservationViewmodel extends ChangeNotifier{
   List<Observation> _observation = [];
   List<Observation> _observations = [];
   List<ObservationPosition> _observationPosition = [];
+  final String type = "";
   bool _loading = true;
   String? _errorMessage;
 
@@ -21,7 +21,7 @@ class ObservationViewmodel extends ChangeNotifier{
   String? get errorMessage => _errorMessage;
 
   // 서비스 호출
-  Future<void> fetchOne({
+  Future<List<Observation>> fetchOne({
     required String type,
     required String startDate,
     required String endDate
@@ -34,24 +34,29 @@ class ObservationViewmodel extends ChangeNotifier{
         startDate: startDate,
         endDate : endDate,
       );
+      return _observation;
     } catch (e){
       _errorMessage = e.toString();
+      return [];
     } finally {
       _loading = false;
       notifyListeners();
     }
   }
-  Future<void> fetchAll({
+  Future<List<Observation>> fetchAll({
     required String type,
   }) async{
     _loading = true;
     notifyListeners();
     try{
-      _observations = await _service.fetchObservationAll(type: type);
+      final answer = await _service.fetchObservationAll(type: type);
+      _observation = answer;
       _errorMessage = null;
+      return answer;
     }
     catch(e){
       _errorMessage = e.toString();
+      return [];
     }
     finally{
       _loading = false;

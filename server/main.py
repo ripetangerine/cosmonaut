@@ -2,13 +2,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI, Query
 from fastapi.encoders import jsonable_encoder
 from fastapi.middleware.cors import CORSMiddleware
-# from pydantic import BaseModel
 from datetime import datetime
-
-# 라우트 
-# from app.routes.information import router as information, get_calender
-# from app.routes.observation import router as observation, get_observation, star_position
-# from app.routes.whitenoise import router as whitenoise, get_whitenoise
 
 from app.routes import observation, information, whitenoise
 from app.routes.information import get_calender, mars_date
@@ -32,11 +26,12 @@ app.include_router(whitenoise.router, prefix='/whitenoise')
 
 origins = [
   "http://localhost:8080",
+  # 'http://10.0.2.2:8000'
 ]
 
 app.add_middleware(
   CORSMiddleware,
-  allow_origins=origins,
+  allow_origins=["*"],
   allow_credentials=True,
   allow_methods=["*"],
   allow_headers=["*"]
