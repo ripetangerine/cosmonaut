@@ -23,19 +23,25 @@ class Manager:
 
   async def insert(self, table, value): # 이중으로 삽입 -> ("table", ("값1, 값2..."))
     # TODO : 테이블 부분 쿼리 수정 필요
-    query = f"INSERT INTO {table} (name, age) VALUES (?, ?);"
+    query = f"INSERT INTO {table} VALUES (?, ?);"
     async with self.connect.cursor() as cursor:
       await cursor.execute(query, value)
     await self.connect.commit()
 
-  async def select(self, table, id):
-    if(id == None):
+  async def select(self, table, column=None, value=None):
+    VALID_CONDITION = ['id', 'name', 'month']
+
+    if(VALID_CONDITION.index(column)):
+      raise ValueError("db manager select Invalid column")
+
+    if(column == None or value == None):
       query = f"SELECT * FROM {table}"
     else:
-      query = f"SELECT * FROM {table} WHERE id=?"
+      query = f"SELECT * FROM {table} WHERE {column}=?"
+
     async with self.connect.cursor() as cursor:
       try:
-        await cursor.execute(query, (id, ))
+        await cursor.execute(query, (value, ))
       except Exception:
         return False
       answer = await cursor.fetchone()

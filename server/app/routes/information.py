@@ -1,5 +1,6 @@
 from contextlib import asynccontextmanager
 from fastapi import APIRouter, Query
+from fastapi.encoders import jsonable_encoder
 import httpx
 import random 
 import datetime
@@ -31,8 +32,44 @@ db : SchemaManager = None
 
 # 천문 현상 정보 랜덤 반환
 # 월 단위 
+@router.get("/calender/check")
+async def calender_check():
+  # db에 접근해서 calender에 내용이 있는지 확인
+  date_now = datetime.datetime.now()
+  data:str = await db.select("calender", "month", date_now.month)
+  if not data:
+    new_reqest_data = await fetchCalender()
+    items = new_reqest_data.response.body.items
+    will_delete = False
+    
+    for i in items:
+      if len(i.locate) > 6:
+        day = i.locate[5:6]
+        month = i.locate[4:5]
+      if month != date_now.month:
+        will_delete = True
+
+      await db.insert('calender', (
+        date_now.month, 
+        day, 
+        i.astroTitle, 
+        i.astroEvent,
+        i.astroTime,
+        i.seq 
+      ))
+  if(will_delete):
+    try :
+      db.delete('calender')
+    except Exception as e:
+      print(e)
+
+
 @router.get('/calender')
-async def get_calender(
+async def get_calender():
+  return jsonable_encoder(db.select("calender"))
+
+
+async def fetchCalender(
   year: int = Query(...), 
   month: int = Query(...)
   ):

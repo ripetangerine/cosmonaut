@@ -68,7 +68,16 @@ async def main():
       path VARCHAR(255),
       title VARCHAR(255)
     );
-
+    """,
+    """
+    CREATE TABLE calender(
+      month INT PRIMARY KEY,
+      event_day INT NOT NULL,
+      event_title TEXT NOT NULL,
+      event_content TEXT NOT NULL,
+      event_time TEXT,
+      seq_num INT,
+    );
     """
   ]
 
