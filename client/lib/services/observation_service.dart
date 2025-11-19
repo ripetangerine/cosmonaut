@@ -11,7 +11,7 @@ class ObservationService {
     required String startDate,
     required String endDate,
   }) async {
-    final url = Uri.parse('$baseUrl/observation/').replace(
+    final url = Uri.parse('$baseUrl/observation').replace(
       queryParameters : {
         'type' : type,
         'startDate' : startDate,

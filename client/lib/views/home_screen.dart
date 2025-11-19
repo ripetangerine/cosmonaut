@@ -1,3 +1,5 @@
+import 'package:client/viewmodels/initial_data_viewmodel.dart';
+import 'package:client/viewmodels/observation_viewmodel.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:client/widgets/space.dart';
@@ -7,6 +9,8 @@ import 'package:client/widgets/planet.dart';
 import 'package:client/views/calender_screen.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+
+import 'package:provider/provider.dart';
 
 class HomeScreen extends StatefulWidget{
   const HomeScreen({super.key});
@@ -20,14 +24,13 @@ class _HomeScreenState extends State<HomeScreen>{
   @override
   void initState(){
     super.initState();
-    Future.microtask((){
-      context.read<ObservationViewmodel>.fetchAll();
-    });
-  }
+  }   
 
   @override
   Widget build(BuildContext context){
-    final viewModel = context.watch<InitialDataViewmodel>();
+    final initialViewModel = context.watch<InitialDataViewmodel>();
+    final observationViewModel = context.read<ObservationViewmodel>();//.fetchAll();
+    observationViewModel.fetchAll(type:"solar");
 
     return Scaffold(
       appBar: AppBar(
