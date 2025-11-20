@@ -20,9 +20,9 @@ app = FastAPI(
   lifespan=combined_lifespan
 )
 
-app.include_router(observation.router, prefix='/observation')
-app.include_router(information.router, prefix='/information')
-app.include_router(whitenoise.router, prefix='/whitenoise')
+app.include_router(observation.router)
+app.include_router(information.router)
+app.include_router(whitenoise.router)
 
 origins = [
   "http://localhost:8080",

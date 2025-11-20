@@ -6,17 +6,36 @@ import 'package:client/views/home_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:provider/provider.dart';
+import 'package:timezone/data/latest.dart' as tz;
+import 'package:timezone/timezone.dart' as tz;
+import 'package:client/util/datetimeutil.dart';
+
 
 Future<void> main() async{
   WidgetsFlutterBinding.ensureInitialized();
-  await dotenv.load(fileName: 'assets/config/.env');
+  // await dotenv.load(fileName: 'assets/config/.env');
+  await dotenv.load(fileName: ".env"); 
+  tz.initializeTimeZones();
+  var locations = tz.timeZoneDatabase.locations;
+
+  for (var element in locations.entries) {
+//    if (element.value.currentTimeZone.abbreviation ==
+//        DateTime.now().timeZoneName) {
+    if (element.value.currentTimeZone.offset ==
+        DateTime.now().timeZoneOffset.inMilliseconds) {
+      debugPrint(element.value.name);
+      debugPrint(element.value.currentTimeZone.abbreviation);
+      DateTimeUtil.timezone = element.value.name;
+      break;
+    }
+  }
   
   runApp(
     MultiProvider(
       providers : [
         ChangeNotifierProvider(create: (_) => InitialDataViewmodel()),
         ChangeNotifierProvider(create: (_) => ObservationViewmodel()),
-      ], 
+    ], 
     child: const MyApp(),
     ),
   );

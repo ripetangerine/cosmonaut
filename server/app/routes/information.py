@@ -40,7 +40,11 @@ async def calender_check():
   if not data:
     new_reqest_data = await fetchCalender()
     items = new_reqest_data.response.body.items
-    will_delete = False
+    if(will_delete):
+      try :
+        db.delete('calender')
+      except Exception as e:
+        print(e)
     
     for i in items:
       if len(i.locate) > 6:
@@ -57,11 +61,9 @@ async def calender_check():
         i.astroTime,
         i.seq 
       ))
-  if(will_delete):
-    try :
-      db.delete('calender')
-    except Exception as e:
-      print(e)
+    return jsonable_encoder({"status" : False})
+  else:
+    return  jsonable_encoder({"status" : True})
 
 
 @router.get('/calender')
@@ -103,11 +105,11 @@ async def fetchCalender(
 @router.get('/mars')
 async def mars():
   try:
-    data:str = await db.select("Mars", random.randrange(1, 2))
+    data:str = await db.select("Mars", 'id', random.randrange(1, 2))
   except Exception as e:
     print(f"화성 정보 불러오기 에러 : {e}")
     return {"error": str(e)}
-  return data
+  return jsonable_encoder({"data":data})
 
 
 @router.get('/mars/date')
@@ -115,25 +117,25 @@ def mars_date():
   now = datetime.now()
   mars = mars_time.datetime_to_marstime(now.year, now.month, now.day)
   sol = ".0f".format(mars.sol)
-  return sol
+  return jsonable_encoder({"sol":sol})
 
 
 @router.get('/solar')
 async def solarInfo():
   try:
-    data : str = await db.select("Solar", random.randrange(1, 2))
+    data : str = await db.select("Solar", "id", random.randrange(1, 2))
   except Exception as e:
     print(f"태양 정보 불러 오기 에러 : {e}")
-    return {"error" : str(e)}
-  return data
+    return jsonable_encoder({"error" : str(e)})
+  return jsonable_encoder({"data":data})
 
 
 @router.get('/earth')
 async def earthInfo():
   try:
-    data : str = await db.select("Earth", random.randrange(1, 2))
+    data : str = await db.select("Earth", "id", random.randrange(1, 2))
   except Exception as e:
     print(f"지구 정보 불러오기 에러 : {e}")
     return {"error" : str(e)}
-  return data
+  return jsonable_encoder({"data":data})
 

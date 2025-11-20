@@ -68,14 +68,16 @@ class InformationViewModel with ChangeNotifier {
     _endLoading();
   }
 
-  Future<void> loadMarsDate() async {
+  Future<String?> loadMarsDate() async {
     _startLoading();
     try {
       marsDateData = await _service.fetchMarsDate();
+      // return marsDateData;
     } catch (e) {
       _setError(e.toString());
     }
-    _endLoading();
+     _endLoading();
+    return marsDateData;
   }
 
   Future<void> loadEarth() async {

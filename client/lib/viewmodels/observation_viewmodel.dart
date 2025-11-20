@@ -3,7 +3,7 @@ import 'package:client/models/observation.dart';
 import 'package:client/models/observation_position.dart';
 import 'package:client/services/observation_service.dart';
 
-class ObservationViewmodel extends ChangeNotifier{
+class ObservationViewModel extends ChangeNotifier{
   final ObservationService _service = ObservationService();
 
   List<Observation> _observation = [];
