@@ -9,7 +9,7 @@ class ObservationViewModel extends ChangeNotifier{
   List<Observation> _observation = [];
   List<Observation> _observations = [];
   List<ObservationPosition> _observationPosition = [];
-  final String type = "";
+  String type = "";
   bool _loading = true;
   String? _errorMessage;
 

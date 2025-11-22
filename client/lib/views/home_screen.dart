@@ -1,8 +1,10 @@
+import 'dart:collection';
 import 'dart:math';
 
 import 'package:client/viewmodels/information_viewmodel.dart';
 import 'package:client/viewmodels/initial_data_viewmodel.dart';
 import 'package:client/viewmodels/observation_viewmodel.dart';
+import 'package:client/viewmodels/whitenoise_viewmodel.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 // import 'package:client/widgets/space.dart';
@@ -26,76 +28,116 @@ class HomeScreen extends StatefulWidget{
 
 // SUN (Default)
 class _HomeScreenState extends State<HomeScreen>{
+  final PageController _pageController = PageController();
+  int currentIndex = 0;
+  final pageTypes = ["solar", "mars", "earth"];
+  
   @override
   void initState(){
     super.initState();
     // final vmInitialData = context.read<InitialDataViewmodel>();
     // final vmObservationData = context.read<ObservationViewmodel>();
+    
   }   
+  void _onPageChanged(int index) {
+    setState(() {
+      currentIndex = index;
+    });
+    final type = pageTypes[index];
+
+    // 관측 로그 요청
+    context.read<ObservationViewModel>().fetchOne(
+      type: type,
+      startDate: "2025-01-01",
+      endDate: "2025-01-01",
+    );
+    // 오디오/화이트노이즈 요청
+    // context.read<WhiteNoiseViewModel>().fetchPlayAudio(title: title);
+  }
 
   @override
   Widget build(BuildContext context){
-    // final vmInitialData = context.watch<InitialDataViewmodel>();
-    final vmInformationData = context.watch<InformationViewModel>();
-    final vmObservationData = context.watch<ObservationViewModel>();
-    final vmWhiteNoiseData = context.watch<WhiteNoiseViewModel>();
+    final vmInitial = context.watch<InitialDataViewmodel>();
+    final vmInfo = context.watch<InformationViewModel>();
+    final vmObs = context.watch<ObservationViewModel>();
+    final vmWhite = context.watch<WhiteNoiseViewModel>();
+
+    List<String>? universeSoundList = vmWhite.audioListData;
+    int currentSoundIndex = 0;
+    String? currentSound = universeSoundList?[currentSoundIndex];
 
     return Scaffold(
       appBar: AppBar(
-        elevation: 2,
-        backgroundColor: Theme.of(context).colorScheme.surface,
-        foregroundColor: Theme.of(context).colorScheme.surface,
-        
-        title: const Text(
-          "cosmonaut",
+        title: const Text("cosmonaut",
           style: TextStyle(
             fontSize: 24,
           ),
         ),
-        
         actions: [
           IconButton(
             onPressed: (){
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => CalenderScreen(
-                    // 파라미터
-                  ),  
+                  builder: (context) => CalenderScreen(),  
                 )
               );
             }, 
             icon: SvgPicture.asset('assets/icons/calender_icon_dot', width:22, height:22),
           )
         ],
+        //기본 스타일 구성
+        elevation: 2,
+        backgroundColor: Theme.of(context).colorScheme.surface,
+        foregroundColor: Theme.of(context).colorScheme.surface,
       ),
-      body: Column(
-        mainAxisAlignment: MainAxisAlignment.start,
-        crossAxisAlignment: CrossAxisAlignment.center,
+      body: PageView(
+        controller: _pageController,
+        onPageChanged: _onPageChanged,
         children: [
-          Space(),
-          SpaceAudioCard(
-            title: vmWhiteNoiseData.audioName,         // "sound of solar"
-            utcTime:  "UTC+9",         // "UTC+9"
-            solDate: vmInformationData.loadMarsDate() as String,         // "596 sol"
-            onPlay: () {
-              vmWhiteNoiseData.playAudio();            // ViewModel에서 재생
-            },
-            onNext: () {
-              vmWhiteNoiseData.fetchNextAudio();       // 우주선 버튼 → 다음 오디오 요청
-            },
-          ),
-          Log(),
-          Planet(),
+          _buildPage(vmInitial, vmObs, vmWhite),
+          _buildPage(vmInitial, vmObs, vmWhite),
+          _buildPage(vmInitial, vmObs, vmWhite),
         ],
-      )
+      ),
     );
   }
 }
 
+ Widget _buildPage(vmInitial, vmObs, vmWhite){
+  return 
+    Column(
+      mainAxisAlignment: MainAxisAlignment.start,
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        _Space(),
+        SpaceAudioCard(
+          title: (currentSound as String),   // "sound of solar"
+          utcTime:  "UTC+9",         // "UTC+9"
+          solDate: vmInformationData.loadMarsDate() as String,         // "596 sol"
+          onPlay: () {
+            vmWhiteNoiseData.playAudio(title:currentSound as String);            // ViewModel에서 재생
+          },
+          onNext: () {
+            currentSound = universeSoundList?[++currentSoundIndex];
+            vmWhiteNoiseData.fetchPlayAudio(
+              title: currentSound as String
+            );       // 우주선 버튼 → 다음 오디오 요청
+          },
+        ),
+        LogCard(
+          title: vmObservationData.fetchOne(),
+          subtitle: vmObservationData.observation["eventTitle"],
+          detail: vm
+        ),
+        OrbCard(
 
-class Space extends StatelessWidget {
-  const Space({super.key});
+        ),
+      ],
+    );
+ }
+
+class _Space extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -244,55 +286,99 @@ class SpaceAudioCard extends StatelessWidget {
   }
 }
 
-
-class Log extends StatelessWidget {
-  const Log({super.key});
-
+class LogCard extends StatelessWidget {
+  final String title;        // 관측 종류 (예: FLR)
+  final String subtitle;     // 부제 (예: "태양 플레어 알림")
+  final String detail; 
+  const LogCard({
+    super.key, required this.title, required this.subtitle, required this.detail,
+  });
   @override
   Widget build(BuildContext context) {
-    final vm = context.watch<ObservationViewmodel>();
+    return Container(
+      width: double.infinity,
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: const Color(0x66102030), // 반투명 네모 박스
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: Colors.white),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          /// HEADER
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                "관측 일지",
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 24,
+                  fontFamily: "pixel",
+                ),
+              ),  
 
-    return Column(
-      children: vm.observations.map((o) {
-        return ListTile(
-          title: Text(o.type),
-          subtitle: Text(o.date),
-        );
-      }).toList(),
+              Container(
+                padding:
+                  const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF074A87),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: const Text(
+                  "전체탐사",
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontFamily: "pixel",
+                    fontSize: 16,
+                  ),
+                ),
+              )
+            ],
+          ),
+
+          const SizedBox(height: 8),
+
+          Container(
+            height: 1,
+            width: double.infinity,
+            color: Colors.white.withOpacity(0.2),
+          ),
+
+          const SizedBox(height: 8),
+
+          /// CONTENT
+          Text(
+            "$title ($subtitle)",
+            style: const TextStyle(
+              color: Color(0xFF00FF00), // 초록 텍스트
+              fontSize: 16,
+              fontFamily: "pixel",
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
 
-class Planet extends StatelessWidget {
-  const Planet({super.key});
+class OrbCard extends StatelessWidget {
+  OrbCard({
+    super.key,
+    required String type,
+  });
+  Map<String, dynamic>? orbSize = {
+    "solar" : 10,
+    "earth" : 10,
+    "mars" : 10,
+  };
 
   @override
   Widget build(BuildContext context) {
-    final vm = context.watch<InitialDataViewmodel>();
-
-    return Padding(
-      padding: const EdgeInsets.all(8.0),
-      child: Text("현재 행성: ${vm.currentPlanetName}"),
-    );
+    return Container(
+      
+    ); 
   }
 }
-
-
-
-
-
-
-
-// //
-// void fetchData() async {
-//   final response = await http.get(Uri.parse('http://127.0.0.1:8000/items/1'));
-  
-//   if (response.statusCode == 200) {
-//     var data = jsonDecode(response.body);
-//     print(data);
-//   } else {
-//     print('Failed to load data');
-//   }
-// }
-
-
