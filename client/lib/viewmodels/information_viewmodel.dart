@@ -4,7 +4,6 @@ import 'package:client/services/information_service.dart';
 class InformationViewModel with ChangeNotifier {
   final InformationService _service = InformationService();
 
-  //
   bool isLoading = false;
   String? errorMessage;
 
@@ -16,7 +15,6 @@ class InformationViewModel with ChangeNotifier {
   String? earthData;
   String? solarData;
 
-  // 
   void _startLoading() {
     isLoading = true;
     errorMessage = null;
@@ -33,7 +31,6 @@ class InformationViewModel with ChangeNotifier {
     notifyListeners();
   }
 
-// 
   Future<void> checkCalender() async {
     _startLoading();
     try {

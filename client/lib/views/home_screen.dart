@@ -1,16 +1,13 @@
 import 'dart:collection';
 import 'dart:math';
 
+import 'package:client/models/observation.dart';
 import 'package:client/viewmodels/information_viewmodel.dart';
 import 'package:client/viewmodels/initial_data_viewmodel.dart';
 import 'package:client/viewmodels/observation_viewmodel.dart';
 import 'package:client/viewmodels/whitenoise_viewmodel.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-// import 'package:client/widgets/space.dart';
-// import 'package:client/widgets/white_noise.dart';
-// import 'package:client/widgets/log.dart';
-// import 'package:client/widgets/planet.dart';
 import 'package:client/models/observation_position.dart';
 
 import 'package:client/views/calender_screen.dart';
@@ -27,34 +24,37 @@ class HomeScreen extends StatefulWidget{
 }
 
 // SUN (Default)
+// TODO : 이전 행성 상태 관리
 class _HomeScreenState extends State<HomeScreen>{
   final PageController _pageController = PageController();
   int currentIndex = 0;
   final pageTypes = ["solar", "mars", "earth"];
-  
+  final String defaultPageType = "solar"; // 이전에 저장된 페이지의 타입이 없거나/불러올 수 없음 -> 해당 인용
+  late String currentPageType = defaultPageType;
+
+  late List<String> universeSoundList;
+  // TODO : 모듈 연산으로 메인페이지수, 노래 인덱스 수  나타내기
+  int currentSoundIndex = 0;
+  late String? currentSound = universeSoundList[currentSoundIndex];
+
   @override
   void initState(){
     super.initState();
     // final vmInitialData = context.read<InitialDataViewmodel>();
-    // final vmObservationData = context.read<ObservationViewmodel>();
-    
-  }   
+    // final vmObservationData = context.read<ObservationViewModel>();
+  }
   void _onPageChanged(int index) {
     setState(() {
-      currentIndex = index;
+      currentIndex = index-1;
     });
-    final type = pageTypes[index];
-
-    // 관측 로그 요청
+    String type = pageTypes[currentIndex];
     context.read<ObservationViewModel>().fetchOne(
       type: type,
+      // TODO : 추후 오늘 날짜로 변경 
       startDate: "2025-01-01",
       endDate: "2025-01-01",
     );
-    // 오디오/화이트노이즈 요청
-    // context.read<WhiteNoiseViewModel>().fetchPlayAudio(title: title);
   }
-
   @override
   Widget build(BuildContext context){
     final vmInitial = context.watch<InitialDataViewmodel>();
@@ -62,9 +62,8 @@ class _HomeScreenState extends State<HomeScreen>{
     final vmObs = context.watch<ObservationViewModel>();
     final vmWhite = context.watch<WhiteNoiseViewModel>();
 
-    List<String>? universeSoundList = vmWhite.audioListData;
-    int currentSoundIndex = 0;
-    String? currentSound = universeSoundList?[currentSoundIndex];
+    universeSoundList = vmWhite.audioListData as List<String>;
+
 
     return Scaffold(
       appBar: AppBar(
@@ -95,16 +94,35 @@ class _HomeScreenState extends State<HomeScreen>{
         controller: _pageController,
         onPageChanged: _onPageChanged,
         children: [
-          _buildPage(vmInitial, vmObs, vmWhite),
-          _buildPage(vmInitial, vmObs, vmWhite),
-          _buildPage(vmInitial, vmObs, vmWhite),
+          _buildPage(
+            vmInitial, 
+            vmObs, 
+            vmWhite, 
+            vmInfo, 
+            currentSound, 
+            currentPageType
+          ),
         ],
       ),
     );
   }
 }
 
- Widget _buildPage(vmInitial, vmObs, vmWhite){
+Widget _buildPage(
+    InitialDataViewmodel vmInitial, 
+    ObservationViewModel vmObs, 
+    WhiteNoiseViewModel vmWhite, 
+    InformationViewModel vmInfo, 
+    String? currentSound,
+    String pageType,
+  ){
+
+  Observation vmObsFetchOne = vmObs.fetchOne(
+    type:pageType, 
+    startDate:"2025-01-01", 
+    endDate:"2025-01-01"
+  ) as Observation;
+
   return 
     Column(
       mainAxisAlignment: MainAxisAlignment.start,
@@ -114,29 +132,29 @@ class _HomeScreenState extends State<HomeScreen>{
         SpaceAudioCard(
           title: (currentSound as String),   // "sound of solar"
           utcTime:  "UTC+9",         // "UTC+9"
-          solDate: vmInformationData.loadMarsDate() as String,         // "596 sol"
+          solDate: vmInfo.loadMarsDate() as String,         // "596 sol"
           onPlay: () {
-            vmWhiteNoiseData.playAudio(title:currentSound as String);            // ViewModel에서 재생
+            vmWhite.playAudio(title:currentSound);            // ViewModel에서 재생
           },
           onNext: () {
-            currentSound = universeSoundList?[++currentSoundIndex];
-            vmWhiteNoiseData.fetchPlayAudio(
-              title: currentSound as String
+            vmWhite.fetchPlayAudio(
+              title: currentSound
             );       // 우주선 버튼 → 다음 오디오 요청
           },
-        ),
+        ),  
         LogCard(
-          title: vmObservationData.fetchOne(),
-          subtitle: vmObservationData.observation["eventTitle"],
-          detail: vm
+          title: vmObsFetchOne.eventTitle,
+          subtitle: vmObsFetchOne.eventTime,
+          detail: vmObsFetchOne.content
         ),
         OrbCard(
-
+          type: pageType,
         ),
       ],
     );
  }
 
+// TODO : 10초단위로 별 자동 렌더링 구현
 class _Space extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
@@ -170,9 +188,8 @@ class _Space extends StatelessWidget {
               );
             }),
 
-            // 2) 중앙 캐릭터
             Image.asset(
-              "assets/images/astronaut.png", // 너가 가진 우주인 이미지 경로
+              "assets/images/astronaut.png", 
               width: 90,
               height: 90,
             ),
@@ -189,7 +206,6 @@ class SpaceAudioCard extends StatelessWidget {
   final String solDate;     // 596 sol
   final VoidCallback onPlay;
   final VoidCallback onNext;
-
   const SpaceAudioCard({
     super.key,
     required this.title,
@@ -198,6 +214,7 @@ class SpaceAudioCard extends StatelessWidget {
     required this.onPlay,
     required this.onNext,
   });
+
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -255,9 +272,7 @@ class SpaceAudioCard extends StatelessWidget {
             ),
           ),
 
-          // ------------------------
-          // RIGHT SIDE
-          // ------------------------
+
           Column(
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
@@ -293,6 +308,7 @@ class LogCard extends StatelessWidget {
   const LogCard({
     super.key, required this.title, required this.subtitle, required this.detail,
   });
+
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -319,7 +335,6 @@ class LogCard extends StatelessWidget {
                   fontFamily: "pixel",
                 ),
               ),  
-
               Container(
                 padding:
                   const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -338,17 +353,13 @@ class LogCard extends StatelessWidget {
               )
             ],
           ),
-
           const SizedBox(height: 8),
-
           Container(
             height: 1,
             width: double.infinity,
             color: Colors.white.withOpacity(0.2),
           ),
-
           const SizedBox(height: 8),
-
           /// CONTENT
           Text(
             "$title ($subtitle)",
@@ -364,21 +375,44 @@ class LogCard extends StatelessWidget {
   }
 }
 
-class OrbCard extends StatelessWidget {
-  OrbCard({
-    super.key,
-    required String type,
-  });
-  Map<String, dynamic>? orbSize = {
-    "solar" : 10,
-    "earth" : 10,
-    "mars" : 10,
-  };
+class OrbCard extends StatefulWidget{
+  final String type;
+  const OrbCard({super.key, required this.type});
+  
+  @override
+  State<OrbCard> createState() => _OrbCardState();
+}
+
+class _OrbCardState extends State<OrbCard>{
+ String currentOrbUrl = "";
 
   @override
-  Widget build(BuildContext context) {
-    return Container(
-      
-    ); 
+  void initState(){
+    super.initState();
+    currentOrbUrl = "/${widget.type}.svg";
   }
+
+ @override
+ Widget build(BuildContext buildContext){
+  return SizedBox(
+    height: 300,
+    width: 300,
+    child: Stack(
+      children: [
+        Positioned(
+          child: OverflowBox(
+            minWidth: 0,
+            minHeight: 0,
+            maxHeight: double.infinity,
+            maxWidth: double.infinity,
+            alignment: Alignment.center,
+            child: SvgPicture.asset(
+              "asset/icons$currentOrbUrl"
+            )
+          )
+        )
+      ],
+    )
+  );
+ }
 }

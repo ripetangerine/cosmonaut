@@ -6,7 +6,7 @@ import 'package:client/models/observation.dart';
 class ObservationService {
   final String baseUrl = 'http://10.0.2.2:8000';
 
-  Future<List<Observation>> fetchObservation({
+  Future<Observation> fetchObservation({
     required String type,
     required String startDate,
     required String endDate,
@@ -20,8 +20,9 @@ class ObservationService {
     );
     final response = await http.get(url);
     if (response.statusCode == 200) {
-      final List<dynamic> data = json.decode(response.body);
-      return data.map((e) => Observation.fromJson(e)).toList();
+      // final List<dynamic> data = json.decode(response.body);
+      // return data.map((e) => Observation.fromJson(e)).toList();
+      return json.decode(response.body);
     } else {
       throw Exception('관찰 일지 정보를 불러오지 못했습니다.');
     }

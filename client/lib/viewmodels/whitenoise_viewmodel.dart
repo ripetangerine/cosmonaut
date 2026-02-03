@@ -1,12 +1,9 @@
-
 import 'dart:typed_data';
-
 import 'package:flutter/material.dart';
 // import 'package:client/models/whitenoise_model.dart';
 import "package:client/services/whitenoise_service.dart";
 import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-
 
 class WhiteNoiseViewModel extends ChangeNotifier {
   final WhiteNoiseService _service = WhiteNoiseService();

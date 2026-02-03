@@ -1,5 +1,3 @@
-
-
 import 'package:client/models/initial_data.dart';
 import 'package:client/services/initial_data_service.dart';
 import 'package:flutter/material.dart';

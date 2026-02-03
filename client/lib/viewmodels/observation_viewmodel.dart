@@ -6,26 +6,26 @@ import 'package:client/services/observation_service.dart';
 class ObservationViewModel extends ChangeNotifier{
   final ObservationService _service = ObservationService();
 
-  List<Observation> _observation = [];
-  List<Observation> _observations = [];
-  List<ObservationPosition> _observationPosition = [];
+  late Observation _observation; // late 키워드 추가
+  late List<Observation> _observations = [];
+  late List<ObservationPosition> _observationPosition = [];
   String type = "";
   bool _loading = true;
   String? _errorMessage;
 
-  // 외부 getter
-  List<Observation> get observation => _observation;
+  // getter
+  Observation get observation => _observation;
   List<Observation> get observations => _observations;
   List<ObservationPosition> get observationPosition => _observationPosition;
   bool get loading => _loading;
   String? get errorMessage => _errorMessage;
 
   // 서비스 호출
-  Future<List<Observation>> fetchOne({
+  Future<Observation?> fetchOne({
     required String type,
     required String startDate,
     required String endDate
-  }) async{
+  }) async {
     _loading = true;
     notifyListeners();
     try{
@@ -37,7 +37,7 @@ class ObservationViewModel extends ChangeNotifier{
       return _observation;
     } catch (e){
       _errorMessage = e.toString();
-      return [];
+      return null;
     } finally {
       _loading = false;
       notifyListeners();
@@ -50,7 +50,7 @@ class ObservationViewModel extends ChangeNotifier{
     notifyListeners();
     try{
       final answer = await _service.fetchObservationAll(type: type);
-      _observation = answer;
+      _observations = answer;
       _errorMessage = null;
       return answer;
     }

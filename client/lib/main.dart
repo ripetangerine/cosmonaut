@@ -21,8 +21,8 @@ Future<void> main() async{
   for (var element in locations.entries) {
 //    if (element.value.currentTimeZone.abbreviation ==
 //        DateTime.now().timeZoneName) {
-    if (element.value.currentTimeZone.offset ==
-        DateTime.now().timeZoneOffset.inMilliseconds) {
+    if(element.value.currentTimeZone.offset ==
+      DateTime.now().timeZoneOffset.inMilliseconds) {
       debugPrint(element.value.name);
       debugPrint(element.value.currentTimeZone.abbreviation);
       DateTimeUtil.timezone = element.value.name;
@@ -34,7 +34,7 @@ Future<void> main() async{
     MultiProvider(
       providers : [
         ChangeNotifierProvider(create: (_) => InitialDataViewmodel()),
-        ChangeNotifierProvider(create: (_) => ObservationViewmodel()),
+        ChangeNotifierProvider(create: (_) => ObservationViewModel()), //type : ignore
     ], 
     child: const MyApp(),
     ),
